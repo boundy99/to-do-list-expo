@@ -1,0 +1,25 @@
+{
+  "expo": {
+    "name": "to-do-list-expo",
+    "slug": "to-do-list-expo",
+    "version": "1.0.0",
+    "orientation": "portrait",
+    "userInterfaceStyle": "light",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.anonymous.to-do-list-expo"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#E6F4FE"
+      },
+      "predictiveBackGestureEnabled": false
+    },
+    "web": {},
+    "extra": {
+      "eas": {
+        "projectId": "281d42e3-c031-4602-8fd0-24190551f7b1"
+      }
+    }
+  }
+}
