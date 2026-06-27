@@ -5,6 +5,10 @@
     "version": "1.0.0",
     "orientation": "portrait",
     "userInterfaceStyle": "light",
+    "scheme": "to-do-list-expo",
+    "experiments": {
+      "typedRoutes": true
+    },
     "ios": {
       "supportsTablet": true,
       "bundleIdentifier": "com.anonymous.to-do-list-expo",
@@ -23,6 +27,7 @@
       "eas": {
         "projectId": "281d42e3-c031-4602-8fd0-24190551f7b1"
       }
-    }
+    },
+    "plugins": ["expo-router"]
   }
 }
