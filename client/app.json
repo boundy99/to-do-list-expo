@@ -20,7 +20,8 @@
       "adaptiveIcon": {
         "backgroundColor": "#E6F4FE"
       },
-      "predictiveBackGestureEnabled": false
+      "predictiveBackGestureEnabled": false,
+      "package": "com.anonymous.todolistexpo"
     },
     "web": {},
     "extra": {
@@ -28,6 +29,8 @@
         "projectId": "281d42e3-c031-4602-8fd0-24190551f7b1"
       }
     },
-    "plugins": ["expo-router"]
+    "plugins": [
+      "expo-router"
+    ]
   }
 }
