@@ -1,3 +1,54 @@
+# Learn more https://docs.github.com/en/get-started/getting-started-with-git/ignoring-files
+
+# dependencies (covers root, client, and server via node_modules anywhere)
+node_modules/
+
+# --- Client (Expo / React Native) ---
+client/.expo/
+client/dist/
+client/web-build/
+client/expo-env.d.ts
+client/.kotlin/
+client/ios/
+client/android/
+
+# --- Server (Node / Express / TypeScript) ---
+server/dist/
+server/build/
+
+# Native build artifacts (cross-cutting, in case they appear elsewhere)
+*.orig.*
+*.jks
+*.p8
+*.p12
+*.key
+*.mobileprovision
+
+# Metro
+.metro-health-check*
+
+# debug logs
+npm-debug.*
+yarn-debug.*
+yarn-error.*
+
+# macOS
+.DS_Store
+*.pem
+
+# env files (root, client, and server)
+.env
+.env.*
+!.env.example
+client/.env
+client/.env.*
+!client/.env.example
+server/.env
+server/.env.*
+!server/.env.example
+
+# typescript build info
+*.tsbuildinfo
 # macOS
 .DS_Store
 *.pem
