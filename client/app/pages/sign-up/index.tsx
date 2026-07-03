@@ -30,7 +30,6 @@ export default function SignUp() {
     setSubmitting(false);
 
     if (signUpError) {
-      console.log("CLERK SIGNUP ERROR:", JSON.stringify(signUpError, null, 2));
       setError(signUpError.message ?? "Unable to sign up.");
       return;
     }
