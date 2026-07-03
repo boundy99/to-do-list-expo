@@ -161,12 +161,6 @@ export default function Form({
             </Text>
             <View className="flex-1 h-px bg-outline-variant/30" />
           </View>
-
-          <Pressable className="items-center justify-center w-full border h-13 border-outline-variant rounded-2xl active:opacity-90">
-            <Text className="p-3 font-label-md text-label-md text-on-surface">
-              Continue with Google
-            </Text>
-          </Pressable>
         </View>
 
         <View className="mt-xl">
