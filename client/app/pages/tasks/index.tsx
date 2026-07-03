@@ -2,13 +2,14 @@ import {View, Text, Pressable} from "react-native";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {router} from "expo-router";
 import {useClerk} from "@clerk/expo";
+import {AuthGuard} from "../../components/AuthGuard";
 
-export default function Tasks() {
+function TasksContent() {
   const {signOut} = useClerk();
 
   const onSignOut = async () => {
     await signOut();
-    router.replace("/");
+    router.replace("../");
   };
 
   return (
@@ -32,5 +33,13 @@ export default function Tasks() {
         </View>
       </View>
     </SafeAreaView>
+  );
+}
+
+export default function Tasks() {
+  return (
+    <AuthGuard requireAuth>
+      <TasksContent />
+    </AuthGuard>
   );
 }

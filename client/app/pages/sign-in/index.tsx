@@ -12,9 +12,10 @@ import {Link, router} from "expo-router";
 import {useSignIn} from "@clerk/expo";
 import {useSignInWithGoogle} from "@clerk/expo/google";
 import {links} from "../../links";
+import {AuthGuard} from "../../components/AuthGuard";
 
-export default function SignInScreen() {
-  const {signIn, errors, fetchStatus} = useSignIn();
+function SignInContent() {
+  const {signIn, fetchStatus} = useSignIn();
   const {startGoogleAuthenticationFlow} = useSignInWithGoogle();
 
   const [email, setEmail] = useState("");
@@ -37,24 +38,10 @@ export default function SignInScreen() {
 
     if (signIn.status === "complete") {
       await signIn.finalize({
-        navigate: () => router.replace("../tasks"),
+        navigate: () => router.replace("./tasks"),
       });
     } else {
       setError("Additional verification required.");
-    }
-  };
-
-  const onGooglePress = async () => {
-    try {
-      const {createdSessionId, setActive} =
-        await startGoogleAuthenticationFlow();
-
-      if (createdSessionId && setActive) {
-        await setActive({session: createdSessionId});
-        router.replace("./tasks");
-      }
-    } catch (err: any) {
-      setError(err?.errors?.[0]?.message ?? "Unable to sign in with Google.");
     }
   };
 
@@ -151,25 +138,6 @@ export default function SignInScreen() {
           </Pressable>
         </View>
 
-        <View className="flex-row items-center w-full my-lg">
-          <View className="flex-1 h-px bg-outline-variant" />
-          <Text className="px-md font-label-sm text-label-sm text-on-surface-variant">
-            or
-          </Text>
-          <View className="flex-1 h-px bg-outline-variant" />
-        </View>
-
-        <View className="w-full gap-sm">
-          <Pressable
-            className="flex-row items-center justify-center w-full h-12 border gap-sm bg-surface-container-lowest border-outline-variant rounded-xl active:opacity-90"
-            onPress={onGooglePress}
-          >
-            <Text className="font-label-md text-label-md text-on-surface">
-              Sign in with Google
-            </Text>
-          </Pressable>
-        </View>
-
         <View className="mt-xl">
           <Text className="font-body-sm text-body-sm text-on-surface-variant">
             Don&apos;t have an account?{" "}
@@ -180,5 +148,13 @@ export default function SignInScreen() {
         </View>
       </View>
     </SafeAreaView>
+  );
+}
+
+export default function SignInScreen() {
+  return (
+    <AuthGuard>
+      <SignInContent />
+    </AuthGuard>
   );
 }

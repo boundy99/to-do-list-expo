@@ -21,11 +21,11 @@ export function AuthGuard({children, requireAuth = false}: AuthGuardProps) {
   }
 
   if (isSignedIn && !requireAuth) {
-    return <Redirect href="/pages/tasks" />;
+    return <Redirect href="./pages/tasks" />;
   }
 
   if (!isSignedIn && requireAuth) {
-    return <Redirect href="/pages/sign-in" />;
+    return <Redirect href="./pages/sign-in" />;
   }
 
   return <>{children}</>;
