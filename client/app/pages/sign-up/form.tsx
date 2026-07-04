@@ -147,20 +147,6 @@ export default function Form({
               {submitting ? "Creating account..." : "Sign Up"}
             </Text>
           </Pressable>
-
-          <Text className="px-4 leading-relaxed text-center font-label-sm text-label-sm text-on-surface-variant/70 mt-md">
-            By signing up, you agree to our{" "}
-            <Text className="font-semibold text-primary">Terms</Text> &{" "}
-            <Text className="font-semibold text-primary">Privacy Policy</Text>
-          </Text>
-
-          <View className="flex-row items-center gap-md py-md">
-            <View className="flex-1 h-px bg-outline-variant/30" />
-            <Text className="font-label-sm text-label-sm text-on-surface-variant/40">
-              or
-            </Text>
-            <View className="flex-1 h-px bg-outline-variant/30" />
-          </View>
         </View>
 
         <View className="mt-xl">
