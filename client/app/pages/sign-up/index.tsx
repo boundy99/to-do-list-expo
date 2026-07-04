@@ -21,10 +21,16 @@ export default function SignUp() {
     setError("");
     setSubmitting(true);
 
+    const nameParts = name.trim().split(" ");
+    const firstName = nameParts[0] || "";
+    const lastName = nameParts.slice(1).join(" ") || "";
+
     const {error: signUpError} = await signUp.password({
       emailAddress: email,
       username,
       password,
+      firstName,
+      lastName,
     });
 
     setSubmitting(false);
@@ -55,7 +61,7 @@ export default function SignUp() {
 
     if (signUp.status === "complete") {
       await signUp.finalize({
-        navigate: () => router.replace("../tasks"),
+        navigate: () => router.replace("/pages/tasks"),
       });
     } else {
       setError("Additional verification required.");
