@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "main": "server.ts",
   "scripts": {
-    "dev": "ts-node server.ts"
+    "dev": "ts-node server.ts",
+    "migrate:generate": "drizzle-kit generate",
+    "migrate:run": "drizzle-kit migrate"
   },
   "keywords": [],
   "author": "",
@@ -16,7 +18,8 @@
     "drizzle-orm": "^0.45.2",
     "express": "^5.2.1",
     "morgan": "^1.11.0",
-    "postgres": "^3.4.9"
+    "postgres": "^3.4.9",
+    "svix": "^1.96.1"
   },
   "devDependencies": {
     "@types/express": "^5.0.6",

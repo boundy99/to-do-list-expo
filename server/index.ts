@@ -1,9 +1,9 @@
 import type {Request, Response, NextFunction} from "express";
+import webhookRoutes from "./routes/webhooks";
 
 const express = require("express");
 const morgan = require("morgan");
 const cors = require("cors");
-// const exampleRoutes = require("./routes/exampleRoutes");
 
 const app = express();
 
@@ -18,7 +18,7 @@ app.get("/", (req: Request, res: Response) => {
   res.json({message: "Welcome"});
 });
 
-//routes
-// app.use("/api/examples", exampleRoutes);
+// routes
+app.use("/webhooks", webhookRoutes);
 
 module.exports = app;

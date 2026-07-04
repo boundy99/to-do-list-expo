@@ -11,6 +11,7 @@ client/expo-env.d.ts
 client/.kotlin/
 client/ios/
 client/android/
+client/design/
 
 # --- Server (Node / Express / TypeScript) ---
 server/dist/
