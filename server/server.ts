@@ -8,7 +8,7 @@ const {client} = require("./database/connection");
 async function startServer() {
   try {
     await client`SELECT 1`;
-    console.log(chalk.green("✓ Database connected successfully"));
+    console.log(chalk.green("Database connected successfully"));
 
     app.listen(process.env.PORT, () => {
       console.log(
@@ -17,7 +17,7 @@ async function startServer() {
     });
   } catch (error) {
     const message = error instanceof Error ? error.message : String(error);
-    console.error(chalk.red("✗ Failed to connect to database:"), message);
+    console.error(chalk.red("Failed to connect to database:"), message);
     process.exit(1);
   }
 }
