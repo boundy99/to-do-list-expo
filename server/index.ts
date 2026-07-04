@@ -7,6 +7,9 @@ const cors = require("cors");
 
 const app = express();
 
+// routes
+app.use("/webhooks", express.raw({type: "application/json"}), webhookRoutes);
+
 app.use(express.json());
 app.use(morgan("dev"));
 app.use((req: Request, res: Response, next: NextFunction) => {
@@ -17,8 +20,5 @@ app.use((req: Request, res: Response, next: NextFunction) => {
 app.get("/", (req: Request, res: Response) => {
   res.json({message: "Welcome"});
 });
-
-// routes
-app.use("/webhooks", webhookRoutes);
 
 module.exports = app;

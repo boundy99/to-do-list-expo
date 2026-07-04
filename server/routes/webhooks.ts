@@ -13,11 +13,20 @@ router.post("/clerk", async (req, res) => {
 
   try {
     const svix = new Webhook(WEBHOOK_SECRET);
-    const signature = req.headers["svix-signature"] as string;
 
-    svix.verify(JSON.stringify(req.body), {
-      "svix-signature": signature,
+    const body =
+      req.body instanceof Buffer
+        ? req.body.toString()
+        : JSON.stringify(req.body);
+
+    svix.verify(body, {
+      "svix-id": req.headers["svix-id"] as string,
+      "svix-timestamp": req.headers["svix-timestamp"] as string,
+      "svix-signature": req.headers["svix-signature"] as string,
     });
+
+    const event = JSON.parse(body);
+    req.body = event;
 
     return handleClerkWebhook(req, res);
   } catch (error) {
