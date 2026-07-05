@@ -1,6 +1,6 @@
 import {Request, Response} from "express";
 import {db} from "../database/connection";
-import {tasks} from "../database/schema";
+import {tasks, users} from "../database/schema";
 import {eq} from "drizzle-orm";
 
 export async function createTask(req: Request, res: Response) {
@@ -11,10 +11,20 @@ export async function createTask(req: Request, res: Response) {
       return res.status(400).json({error: "userId and title are required"});
     }
 
+    const user = await db
+      .select()
+      .from(users)
+      .where(eq(users.clerkId, userId))
+      .limit(1);
+
+    if (user.length === 0) {
+      return res.status(404).json({error: "User not found"});
+    }
+
     const newTask = await db
       .insert(tasks)
       .values({
-        userId,
+        userId: user[0].id,
         title,
         description: description || null,
       })
@@ -35,10 +45,22 @@ export async function getTasks(req: Request, res: Response) {
       return res.status(400).json({error: "userId is required"});
     }
 
+    const user = await db
+      .select()
+      .from(users)
+      .where(eq(users.clerkId, String(userId)))
+      .limit(1);
+
+    if (user.length === 0) {
+      const allUsers = await db.select().from(users);
+      console.log("All users in DB:", allUsers);
+      return res.status(404).json({error: "User not found"});
+    }
+
     const userTasks = await db
       .select()
       .from(tasks)
-      .where(eq(tasks.userId, Number(userId)));
+      .where(eq(tasks.userId, user[0].id));
 
     return res.json(userTasks);
   } catch (error) {
