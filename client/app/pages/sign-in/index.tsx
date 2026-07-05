@@ -12,7 +12,7 @@ import {Link, router} from "expo-router";
 import {useSignIn} from "@clerk/expo";
 import {useSignInWithGoogle} from "@clerk/expo/google";
 import {links} from "../../links";
-import {AuthGuard} from "../../components/AuthGuard";
+import {AuthGuard} from "../../components/auth-guard";
 
 function SignInContent() {
   const {signIn, fetchStatus} = useSignIn();

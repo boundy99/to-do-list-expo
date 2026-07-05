@@ -3,7 +3,7 @@ import {router} from "expo-router";
 import {useSignIn, useAuth} from "@clerk/expo";
 import ForgotPasswordForm from "./forgot-password-form";
 import ResetPasswordForm from "./reset-password-form";
-import {AuthGuard} from "../../components/AuthGuard";
+import {AuthGuard} from "../../components/auth-guard";
 
 export default function ForgotPassword() {
   const {signIn} = useSignIn();
