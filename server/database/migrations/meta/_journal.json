@@ -8,6 +8,20 @@
       "when": 1783121115686,
       "tag": "0000_sticky_human_cannonball",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1783213442862,
+      "tag": "0001_illegal_pyro",
+      "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1783213534232,
+      "tag": "0002_early_multiple_man",
+      "breakpoints": true
     }
   ]
 }
