@@ -7,13 +7,12 @@ const morgan = require("morgan");
 const cors = require("cors");
 
 const app = express();
-
 app.use(cors());
 app.use(express.json());
 
 app.use(morgan("dev"));
 app.use((req: Request, res: Response, next: NextFunction) => {
-  console.log(req.path, req.method, req.body);
+  console.log(req.path, req.method);
   next();
 });
 
