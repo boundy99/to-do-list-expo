@@ -1,30 +1,25 @@
 import {Request, Response} from "express";
 import {db} from "../database/connection";
-import {tasks, users} from "../database/schema";
+import {tasks} from "../database/schema";
 import {eq} from "drizzle-orm";
+import "../types";
 
 export async function createTask(req: Request, res: Response) {
   try {
-    const {userId, title, description} = req.body;
+    const {title, description} = req.body;
 
-    if (!userId || !title) {
-      return res.status(400).json({error: "userId and title are required"});
+    if (!title) {
+      return res.status(400).json({error: "Title is required"});
     }
 
-    const user = await db
-      .select()
-      .from(users)
-      .where(eq(users.clerkId, userId))
-      .limit(1);
-
-    if (user.length === 0) {
-      return res.status(404).json({error: "User not found"});
+    if (!req.user) {
+      return res.status(401).json({error: "User not found"});
     }
 
     const newTask = await db
       .insert(tasks)
       .values({
-        userId: user[0].id,
+        userId: req.user.id,
         title,
         description: description || null,
       })
@@ -39,28 +34,14 @@ export async function createTask(req: Request, res: Response) {
 
 export async function getTasks(req: Request, res: Response) {
   try {
-    const {userId} = req.query;
-
-    if (!userId) {
-      return res.status(400).json({error: "userId is required"});
-    }
-
-    const user = await db
-      .select()
-      .from(users)
-      .where(eq(users.clerkId, String(userId)))
-      .limit(1);
-
-    if (user.length === 0) {
-      const allUsers = await db.select().from(users);
-      console.log("All users in DB:", allUsers);
-      return res.status(404).json({error: "User not found"});
+    if (!req.user) {
+      return res.status(401).json({error: "User not found"});
     }
 
     const userTasks = await db
       .select()
       .from(tasks)
-      .where(eq(tasks.userId, user[0].id));
+      .where(eq(tasks.userId, req.user.id));
 
     return res.json(userTasks);
   } catch (error) {

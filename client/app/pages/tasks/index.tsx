@@ -1,10 +1,12 @@
 import {View, Text, Pressable, ScrollView} from "react-native";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {useState, useEffect} from "react";
-import {useUser} from "@clerk/expo";
+import {useUser, useAuth} from "@clerk/expo";
+import {router} from "expo-router";
 import {AuthGuard} from "../../components/auth-guard";
 import {Navbar} from "../../components/navbar";
 import {AddTaskModal} from "../../components/add-task";
+import {EditTaskModal} from "../../components/edit-task";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
 import * as api from "../../services/api";
 
@@ -20,15 +22,22 @@ interface Task {
 
 function TasksContent() {
   const {user} = useUser();
+  const {getToken, signOut} = useAuth();
   const [tasks, setTasks] = useState<Task[]>([]);
   const [filter, setFilter] = useState<"all" | "active" | "completed">("all");
   const [loading, setLoading] = useState(true);
   const [showAddModal, setShowAddModal] = useState(false);
+  const [showEditModal, setShowEditModal] = useState(false);
+  const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  const handleTokenExpired = async () => {
+    await signOut();
+    router.replace("./sign-in");
+  };
 
   useEffect(() => {
     if (user?.id) {
-      console.log("Current user ID:", user.id);
       fetchTasks();
     }
   }, [user?.id]);
@@ -36,9 +45,15 @@ function TasksContent() {
   const fetchTasks = async () => {
     try {
       setLoading(true);
-      const data = await api.getTasks(user?.id || "");
+      const token = await getToken();
+      if (!token) throw new Error("No token available");
+      const data = await api.getTasks(token);
       setTasks(data);
     } catch (error) {
+      if (error instanceof api.TokenExpiredError) {
+        await handleTokenExpired();
+        return;
+      }
       console.error("Failed to fetch tasks:", error);
       setTasks([]);
     } finally {
@@ -54,34 +69,82 @@ function TasksContent() {
 
   const toggleTask = async (taskId: number, completed: boolean) => {
     try {
-      const updatedTask = await api.updateTask(taskId, {
+      const token = await getToken();
+      if (!token) throw new Error("No token available");
+      const updatedTask = await api.updateTask(taskId, token, {
         completed: !completed,
       });
       setTasks(tasks.map((t) => (t.id === taskId ? updatedTask : t)));
     } catch (error) {
+      if (error instanceof api.TokenExpiredError) {
+        await handleTokenExpired();
+        return;
+      }
       console.error("Failed to update task:", error);
     }
   };
 
   const deleteTask = async (taskId: number) => {
     try {
-      await api.deleteTask(taskId);
+      const token = await getToken();
+      if (!token) throw new Error("No token available");
+      await api.deleteTask(taskId, token);
       setTasks(tasks.filter((t) => t.id !== taskId));
     } catch (error) {
+      if (error instanceof api.TokenExpiredError) {
+        await handleTokenExpired();
+        return;
+      }
       console.error("Failed to delete task:", error);
+    }
+  };
+
+  const openEditModal = (task: Task) => {
+    setEditingTask(task);
+    setShowEditModal(true);
+  };
+
+  const updateTask = async (title: string, description?: string) => {
+    if (!editingTask) return;
+    try {
+      setSubmitting(true);
+      const token = await getToken();
+      if (!token) throw new Error("No token available");
+      const updatedTask = await api.updateTask(editingTask.id, token, {
+        title,
+        description,
+      });
+      setTasks(tasks.map((t) => (t.id === editingTask.id ? updatedTask : t)));
+      setShowEditModal(false);
+      setEditingTask(null);
+    } catch (error) {
+      if (error instanceof api.TokenExpiredError) {
+        await handleTokenExpired();
+        return;
+      }
+      console.error("Failed to update task:", error);
+    } finally {
+      setSubmitting(false);
     }
   };
 
   const addTask = async (title: string, description?: string) => {
     try {
       setSubmitting(true);
+      const token = await getToken();
+      if (!token) throw new Error("No token available");
       const newTask = await api.createTask(
         user?.id as unknown as number,
         title,
+        token,
         description,
       );
       setTasks([...tasks, newTask]);
     } catch (error) {
+      if (error instanceof api.TokenExpiredError) {
+        await handleTokenExpired();
+        return;
+      }
       console.error("Failed to add task:", error);
     } finally {
       setSubmitting(false);
@@ -94,14 +157,12 @@ function TasksContent() {
 
   return (
     <SafeAreaView className="flex-1 bg-background" edges={["top"]}>
-      {/* Header */}
       <View className="flex-row items-center justify-between border-b px-margin-mobile h-14 border-outline-variant/20">
         <Text className="font-headline-sm text-headline-sm text-on-surface">
           My Tasks
         </Text>
       </View>
 
-      {/* Filter Tabs */}
       <View className="flex-row gap-sm px-margin-mobile py-lg">
         {(["all", "active", "completed"] as const).map((tab) => (
           <Pressable
@@ -180,12 +241,11 @@ function TasksContent() {
                   </View>
 
                   <View className="flex-row gap-xs">
-                    <Pressable className="active:opacity-70">
-                      <MaterialIcons
-                        name="star-outline"
-                        size={24}
-                        color="#A0A7A5"
-                      />
+                    <Pressable
+                      onPress={() => openEditModal(task)}
+                      className="active:opacity-70"
+                    >
+                      <MaterialIcons name="edit" size={24} color="#A0A7A5" />
                     </Pressable>
                     <Pressable
                       onPress={() => deleteTask(task.id)}
@@ -216,6 +276,18 @@ function TasksContent() {
         visible={showAddModal}
         onClose={() => setShowAddModal(false)}
         onAddTask={addTask}
+        submitting={submitting}
+      />
+
+      <EditTaskModal
+        visible={showEditModal}
+        onClose={() => {
+          setShowEditModal(false);
+          setEditingTask(null);
+        }}
+        onUpdateTask={updateTask}
+        initialTitle={editingTask?.title || ""}
+        initialDescription={editingTask?.description || ""}
         submitting={submitting}
       />
 
