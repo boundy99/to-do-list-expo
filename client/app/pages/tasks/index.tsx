@@ -1,4 +1,4 @@
-import {View, Text, Pressable, ScrollView} from "react-native";
+import {View, Text, Pressable, ScrollView, Alert} from "react-native";
 import {SafeAreaView} from "react-native-safe-area-context";
 import {useState, useEffect} from "react";
 import {useUser, useAuth} from "@clerk/expo";
@@ -30,11 +30,15 @@ function TasksContent() {
   const [showEditModal, setShowEditModal] = useState(false);
   const [editingTask, setEditingTask] = useState<Task | null>(null);
   const [submitting, setSubmitting] = useState(false);
+  const [fetchError, setFetchError] = useState<string | null>(null);
 
   const handleTokenExpired = async () => {
     await signOut();
     router.replace("./sign-in");
   };
+
+  const errorMessage = (error: unknown) =>
+    error instanceof Error ? error.message : "Something went wrong";
 
   useEffect(() => {
     if (user?.id) {
@@ -45,6 +49,7 @@ function TasksContent() {
   const fetchTasks = async () => {
     try {
       setLoading(true);
+      setFetchError(null);
       const token = await getToken();
       if (!token) throw new Error("No token available");
       const data = await api.getTasks(token);
@@ -55,7 +60,7 @@ function TasksContent() {
         return;
       }
       console.error("Failed to fetch tasks:", error);
-      setTasks([]);
+      setFetchError(errorMessage(error));
     } finally {
       setLoading(false);
     }
@@ -81,6 +86,7 @@ function TasksContent() {
         return;
       }
       console.error("Failed to update task:", error);
+      Alert.alert("Couldn't update task", errorMessage(error));
     }
   };
 
@@ -95,7 +101,7 @@ function TasksContent() {
         await handleTokenExpired();
         return;
       }
-      console.error("Failed to delete task:", error);
+      Alert.alert("Couldn't delete task", errorMessage(error));
     }
   };
 
@@ -122,7 +128,7 @@ function TasksContent() {
         await handleTokenExpired();
         return;
       }
-      console.error("Failed to update task:", error);
+      throw error;
     } finally {
       setSubmitting(false);
     }
@@ -146,6 +152,7 @@ function TasksContent() {
         return;
       }
       console.error("Failed to add task:", error);
+      throw error;
     } finally {
       setSubmitting(false);
     }
@@ -187,6 +194,21 @@ function TasksContent() {
         {loading ? (
           <View className="items-center justify-center flex-1 py-xl">
             <Text className="text-on-surface-variant">Loading tasks...</Text>
+          </View>
+        ) : fetchError ? (
+          <View className="items-center justify-center gap-lg py-xl">
+            <MaterialIcons name="error-outline" size={32} color="#A0A7A5" />
+            <Text className="font-body-md text-body-md text-on-surface-variant text-center">
+              {fetchError}
+            </Text>
+            <Pressable
+              onPress={fetchTasks}
+              className="px-lg py-sm rounded-full bg-primary active:opacity-80"
+            >
+              <Text className="font-label-md text-label-md text-black">
+                Try again
+              </Text>
+            </Pressable>
           </View>
         ) : filteredTasks.length === 0 ? (
           <View className="items-center justify-center py-xl">
