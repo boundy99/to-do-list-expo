@@ -11,7 +11,11 @@ interface JwtPayload {
   [key: string]: any;
 }
 
-async function validateUser(req: Request, res: Response, next: NextFunction) {
+export async function validateUser(
+  req: Request,
+  res: Response,
+  next: NextFunction,
+) {
   let token = req.body?.user;
 
   if (!token) {
@@ -65,7 +69,3 @@ async function validateUser(req: Request, res: Response, next: NextFunction) {
     return res.status(401).json({error: "Invalid token"});
   }
 }
-
-module.exports = {
-  validateUser,
-};

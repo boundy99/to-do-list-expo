@@ -1,9 +1,7 @@
-require("dotenv").config();
-
-const app = require("./index");
-const chalk = require("chalk");
-
-const {client} = require("./database/connection");
+import "dotenv/config";
+import chalk from "chalk";
+import app from "./index";
+import {client} from "./database/connection";
 
 async function startServer() {
   try {

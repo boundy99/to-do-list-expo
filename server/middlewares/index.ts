@@ -1,5 +1,1 @@
-const {validateUser} = require("./validate-user");
-
-module.exports = {
-  validateUser,
-};
+export {validateUser} from "./validate-user";

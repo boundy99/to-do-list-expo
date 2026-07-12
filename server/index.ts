@@ -1,10 +1,9 @@
 import type {Request, Response, NextFunction} from "express";
+import express from "express";
+import morgan from "morgan";
+import cors from "cors";
 import webhookRoutes from "./routes/webhooks";
 import taskRoutes from "./routes/tasks";
-
-const express = require("express");
-const morgan = require("morgan");
-const cors = require("cors");
 
 const app = express();
 app.use(cors());
@@ -43,4 +42,4 @@ app.use((err: Error, req: Request, res: Response, next: NextFunction) => {
   return res.status(500).json({error: "Internal server error"});
 });
 
-module.exports = app;
+export default app;

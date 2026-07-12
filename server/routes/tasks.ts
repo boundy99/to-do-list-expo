@@ -6,7 +6,7 @@ import {
   updateTask,
   deleteTask,
 } from "../controllers/task-controller";
-const {validateUser} = require("../middlewares");
+import {validateUser} from "../middlewares";
 
 const router = Router();
 
