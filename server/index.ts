@@ -2,11 +2,13 @@ import type {Request, Response, NextFunction} from "express";
 import express from "express";
 import morgan from "morgan";
 import cors from "cors";
+import helmet from "helmet";
 import webhookRoutes from "./routes/webhooks";
 import taskRoutes from "./routes/tasks";
 import {limiter} from "./middlewares";
 
 const app = express();
+app.use(helmet());
 app.use(limiter);
 app.use(cors());
 app.use(express.json());
