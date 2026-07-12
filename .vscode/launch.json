@@ -15,11 +15,13 @@
       "name": "Server",
       "type": "node",
       "request": "launch",
-      "program": "${workspaceFolder}/server/server.ts",
+      "runtimeExecutable": "${workspaceFolder}/server/node_modules/.bin/nodemon",
+      "runtimeArgs": ["--exec", "ts-node", "server.ts"],
       "cwd": "${workspaceFolder}/server",
+      "restart": true,
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",
-      "runtimeArgs": ["-r", "ts-node/register"]
+      "skipFiles": ["<node_internals>/**"]
     }
   ],
   "compounds": [
