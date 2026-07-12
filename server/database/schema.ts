@@ -73,3 +73,5 @@ export const tasks = pgTable(
     }),
   ],
 );
+
+export type Task = typeof tasks.$inferSelect;
