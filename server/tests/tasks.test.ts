@@ -8,7 +8,6 @@ const {userLookup} = vi.hoisted(() => ({
   userLookup: {rows: [] as unknown[]},
 }));
 
-// validate-user looks the user up via db.select().from().where().limit()
 vi.mock("../database/connection", () => ({
   client: {},
   db: {
