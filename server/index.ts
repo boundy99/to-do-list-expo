@@ -4,8 +4,10 @@ import morgan from "morgan";
 import cors from "cors";
 import webhookRoutes from "./routes/webhooks";
 import taskRoutes from "./routes/tasks";
+import {limiter} from "./middlewares";
 
 const app = express();
+app.use(limiter);
 app.use(cors());
 app.use(express.json());
 
