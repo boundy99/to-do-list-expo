@@ -1,7 +1,7 @@
 import {Request, Response} from "express";
-import {db} from "../database/connection";
 import {tasks} from "../database/schema";
-import {eq} from "drizzle-orm";
+import {withUserContext} from "../database/rls";
+import {and, eq} from "drizzle-orm";
 import "../types";
 
 export async function createTask(req: Request, res: Response) {
@@ -16,14 +16,18 @@ export async function createTask(req: Request, res: Response) {
       return res.status(401).json({error: "User not found"});
     }
 
-    const newTask = await db
-      .insert(tasks)
-      .values({
-        userId: req.user.id,
-        title,
-        description: description || null,
-      })
-      .returning();
+    const userId = req.user.id;
+
+    const newTask = await withUserContext(userId, (tx) =>
+      tx
+        .insert(tasks)
+        .values({
+          userId,
+          title,
+          description: description || null,
+        })
+        .returning(),
+    );
 
     return res.status(201).json(newTask[0]);
   } catch (error) {
@@ -38,10 +42,11 @@ export async function getTasks(req: Request, res: Response) {
       return res.status(401).json({error: "User not found"});
     }
 
-    const userTasks = await db
-      .select()
-      .from(tasks)
-      .where(eq(tasks.userId, req.user.id));
+    const userId = req.user.id;
+
+    const userTasks = await withUserContext(userId, (tx) =>
+      tx.select().from(tasks).where(eq(tasks.userId, userId)),
+    );
 
     return res.json(userTasks);
   } catch (error) {
@@ -54,11 +59,19 @@ export async function getTask(req: Request, res: Response) {
   try {
     const {id} = req.params;
 
-    const task = await db
-      .select()
-      .from(tasks)
-      .where(eq(tasks.id, Number(id)))
-      .limit(1);
+    if (!req.user) {
+      return res.status(401).json({error: "User not found"});
+    }
+
+    const userId = req.user.id;
+
+    const task = await withUserContext(userId, (tx) =>
+      tx
+        .select()
+        .from(tasks)
+        .where(and(eq(tasks.id, Number(id)), eq(tasks.userId, userId)))
+        .limit(1),
+    );
 
     if (task.length === 0) {
       return res.status(404).json({error: "Task not found"});
@@ -76,16 +89,24 @@ export async function updateTask(req: Request, res: Response) {
     const {id} = req.params;
     const {title, description, completed} = req.body;
 
-    const updatedTask = await db
-      .update(tasks)
-      .set({
-        title: title || undefined,
-        description: description || undefined,
-        completed: completed !== undefined ? completed : undefined,
-        updatedAt: new Date(),
-      })
-      .where(eq(tasks.id, Number(id)))
-      .returning();
+    if (!req.user) {
+      return res.status(401).json({error: "User not found"});
+    }
+
+    const userId = req.user.id;
+
+    const updatedTask = await withUserContext(userId, (tx) =>
+      tx
+        .update(tasks)
+        .set({
+          title: title || undefined,
+          description: description || undefined,
+          completed: completed !== undefined ? completed : undefined,
+          updatedAt: new Date(),
+        })
+        .where(and(eq(tasks.id, Number(id)), eq(tasks.userId, userId)))
+        .returning(),
+    );
 
     if (updatedTask.length === 0) {
       return res.status(404).json({error: "Task not found"});
@@ -102,10 +123,18 @@ export async function deleteTask(req: Request, res: Response) {
   try {
     const {id} = req.params;
 
-    const deletedTask = await db
-      .delete(tasks)
-      .where(eq(tasks.id, Number(id)))
-      .returning();
+    if (!req.user) {
+      return res.status(401).json({error: "User not found"});
+    }
+
+    const userId = req.user.id;
+
+    const deletedTask = await withUserContext(userId, (tx) =>
+      tx
+        .delete(tasks)
+        .where(and(eq(tasks.id, Number(id)), eq(tasks.userId, userId)))
+        .returning(),
+    );
 
     if (deletedTask.length === 0) {
       return res.status(404).json({error: "Task not found"});

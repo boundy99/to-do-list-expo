@@ -1,0 +1,8 @@
+ALTER TABLE "tasks" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
+ALTER TABLE "users" ENABLE ROW LEVEL SECURITY;--> statement-breakpoint
+CREATE POLICY "tasks_select_own" ON "tasks" AS PERMISSIVE FOR SELECT TO "authenticated" USING ("user_id" = (select nullif(current_setting('app.user_id', true), '')::int));--> statement-breakpoint
+CREATE POLICY "tasks_insert_own" ON "tasks" AS PERMISSIVE FOR INSERT TO "authenticated" WITH CHECK ("user_id" = (select nullif(current_setting('app.user_id', true), '')::int));--> statement-breakpoint
+CREATE POLICY "tasks_update_own" ON "tasks" AS PERMISSIVE FOR UPDATE TO "authenticated" USING ("user_id" = (select nullif(current_setting('app.user_id', true), '')::int)) WITH CHECK ("user_id" = (select nullif(current_setting('app.user_id', true), '')::int));--> statement-breakpoint
+CREATE POLICY "tasks_delete_own" ON "tasks" AS PERMISSIVE FOR DELETE TO "authenticated" USING ("user_id" = (select nullif(current_setting('app.user_id', true), '')::int));--> statement-breakpoint
+CREATE POLICY "users_select_own" ON "users" AS PERMISSIVE FOR SELECT TO "authenticated" USING ("id" = (select nullif(current_setting('app.user_id', true), '')::int));--> statement-breakpoint
+CREATE POLICY "users_update_own" ON "users" AS PERMISSIVE FOR UPDATE TO "authenticated" USING ("id" = (select nullif(current_setting('app.user_id', true), '')::int)) WITH CHECK ("id" = (select nullif(current_setting('app.user_id', true), '')::int));

@@ -7,4 +7,9 @@ export default {
   dbCredentials: {
     url: process.env.DATABASE_URL || "",
   },
+  entities: {
+    roles: {
+      provider: "supabase",
+    },
+  },
 } satisfies Config;

@@ -34,8 +34,9 @@ async function validateUser(req: Request, res: Response, next: NextFunction) {
       return res.status(401).json({error: "Invalid token"});
     }
 
+    const now = Math.floor(Date.now() / 1000);
+
     if (payload.exp) {
-      const now = Math.floor(Date.now() / 1000);
       if (now > payload.exp) {
         return res.status(401).json({error: "Token expired"});
       }
