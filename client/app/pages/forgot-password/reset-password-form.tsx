@@ -1,7 +1,7 @@
 import { View, Text, TextInput, Pressable } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 import { router } from "expo-router";
-import { DismissKeyboard } from "../../components/dismiss-keyboard";
+import { DismissKeyboard } from "../../../components/dismiss-keyboard";
 
 type Props = {
   code: string;

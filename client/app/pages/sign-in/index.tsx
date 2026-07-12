@@ -11,9 +11,9 @@ import { SafeAreaView } from "react-native-safe-area-context";
 import { Link, router } from "expo-router";
 import { useSignIn } from "@clerk/expo";
 import { useSignInWithGoogle } from "@clerk/expo/google";
-import { links } from "../../links";
-import { AuthGuard } from "../../components/auth-guard";
-import { DismissKeyboard } from "../../components/dismiss-keyboard";
+import { links } from "../../../links";
+import { AuthGuard } from "../../../components/auth-guard";
+import { DismissKeyboard } from "../../../components/dismiss-keyboard";
 
 function SignInContent() {
   const { signIn, fetchStatus } = useSignIn();

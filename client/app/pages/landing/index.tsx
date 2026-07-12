@@ -9,7 +9,7 @@ import {
 import {SafeAreaView} from "react-native-safe-area-context";
 import {Link, Redirect} from "expo-router";
 import {useAuth} from "@clerk/expo";
-import {links} from "../../links";
+import {links} from "../../../links";
 
 export default function Landing() {
   const {isSignedIn, isLoaded} = useAuth({treatPendingAsSignedOut: false});

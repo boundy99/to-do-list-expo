@@ -3,12 +3,12 @@ import {SafeAreaView} from "react-native-safe-area-context";
 import {useState, useEffect} from "react";
 import {useUser, useAuth} from "@clerk/expo";
 import {router} from "expo-router";
-import {AuthGuard} from "../../components/auth-guard";
-import {Navbar} from "../../components/navbar";
-import {AddTaskModal} from "../../components/add-task";
-import {EditTaskModal} from "../../components/edit-task";
+import {AuthGuard} from "../../../components/auth-guard";
+import {Navbar} from "../../../components/navbar";
+import {AddTaskModal} from "../../../components/add-task";
+import {EditTaskModal} from "../../../components/edit-task";
 import MaterialIcons from "react-native-vector-icons/MaterialIcons";
-import * as api from "../../services/api";
+import * as api from "../../../services/api";
 
 interface Task {
   id: number;
