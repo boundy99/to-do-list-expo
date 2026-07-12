@@ -1,7 +1,5 @@
 import {Request, Response} from "express";
-import {eq} from "drizzle-orm";
-import {db} from "../database/connection";
-import {users} from "../database/schema";
+import {insertUser, updateUserByClerkId} from "../dal";
 
 export async function handleClerkWebhook(req: Request, res: Response) {
   try {
@@ -17,8 +15,7 @@ export async function handleClerkWebhook(req: Request, res: Response) {
         return res.status(400).json({error: "No email found"});
       }
 
-      await db.insert(users).values({
-        clerkId: id,
+      await insertUser(id, {
         email: primaryEmail,
         firstName: first_name || "",
         lastName: last_name || "",
@@ -37,15 +34,12 @@ export async function handleClerkWebhook(req: Request, res: Response) {
         return res.status(400).json({error: "No email found"});
       }
 
-      await db
-        .update(users)
-        .set({
-          email: primaryEmail,
-          firstName: first_name || "",
-          lastName: last_name || "",
-          username: username || "",
-        })
-        .where(eq(users.clerkId, id));
+      await updateUserByClerkId(id, {
+        email: primaryEmail,
+        firstName: first_name || "",
+        lastName: last_name || "",
+        username: username || "",
+      });
 
       return res.json({success: true, message: "User updated"});
     }

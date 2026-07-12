@@ -1,8 +1,6 @@
 import {Request, Response, NextFunction} from "express";
 import * as jwt from "jsonwebtoken";
-import {db} from "../database/connection";
-import {users} from "../database/schema";
-import {eq} from "drizzle-orm";
+import {findUserByClerkId} from "../dal";
 import "../types";
 
 interface JwtPayload {
@@ -52,14 +50,10 @@ export async function validateUser(
       return res.status(401).json({error: "Invalid token structure"});
     }
 
-    const user = await db
-      .select()
-      .from(users)
-      .where(eq(users.clerkId, clerkId))
-      .limit(1);
+    const user = await findUserByClerkId(clerkId);
 
-    if (user.length > 0) {
-      req.user = user[0];
+    if (user) {
+      req.user = user;
       req.body = restBody;
       next();
     } else {
