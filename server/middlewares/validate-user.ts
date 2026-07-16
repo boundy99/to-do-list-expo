@@ -1,13 +1,7 @@
 import {Request, Response, NextFunction} from "express";
-import * as jwt from "jsonwebtoken";
+import {verifyToken} from "@clerk/backend";
 import {findUserByClerkId} from "../dal";
 import "../types";
-
-interface JwtPayload {
-  sub?: string;
-  id?: string;
-  [key: string]: any;
-}
 
 export async function validateUser(
   req: Request,
@@ -25,32 +19,26 @@ export async function validateUser(
 
   const restBody = req.body || {};
 
+  if (!token) {
+    return res.status(401).json({error: "Token required"});
+  }
+
+  const secretKey = process.env.CLERK_SECRET_KEY;
+
+  if (!secretKey) {
+    return res.status(500).json({error: "Clerk secret key not configured"});
+  }
+
+  const authorizedParties = process.env.CLERK_AUTHORIZED_PARTIES
+    ? process.env.CLERK_AUTHORIZED_PARTIES.split(",")
+        .map((party) => party.trim())
+        .filter(Boolean)
+    : undefined;
+
   try {
-    if (!token) {
-      return res.status(401).json({error: "Token required"});
-    }
+    const payload = await verifyToken(token, {secretKey, authorizedParties});
 
-    const payload = jwt.decode(token) as JwtPayload;
-
-    if (!payload) {
-      return res.status(401).json({error: "Invalid token"});
-    }
-
-    const now = Math.floor(Date.now() / 1000);
-
-    if (payload.exp) {
-      if (now > payload.exp) {
-        return res.status(401).json({error: "Token expired"});
-      }
-    }
-
-    const clerkId = payload.sub || payload.id;
-
-    if (!clerkId) {
-      return res.status(401).json({error: "Invalid token structure"});
-    }
-
-    const user = await findUserByClerkId(clerkId);
+    const user = await findUserByClerkId(payload.sub);
 
     if (user) {
       req.user = user;
