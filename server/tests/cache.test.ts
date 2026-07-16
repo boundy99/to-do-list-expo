@@ -1,9 +1,9 @@
 import {describe, it, expect, beforeEach, afterAll, vi} from "vitest";
 import request from "supertest";
-import * as jwt from "jsonwebtoken";
 
 const {userLookup, store} = vi.hoisted(() => {
   process.env.REDIS_URL = "redis://cache-test";
+  process.env.CLERK_SECRET_KEY = "test-secret-key";
   return {
     userLookup: {rows: [] as unknown[]},
     store: new Map<string, string>(),
@@ -47,10 +47,23 @@ vi.mock("../database/rls", () => ({
   withUserContext: vi.fn(),
 }));
 
+vi.mock("@clerk/backend", () => ({
+  verifyToken: vi.fn(async (token: string) => {
+    if (!token.startsWith("valid.")) {
+      throw new Error("Token verification failed");
+    }
+    return {sub: token.slice("valid.".length)};
+  }),
+}));
+
 import app from "../index";
 import {withUserContext} from "../database/rls";
 
 const mockWithUserContext = vi.mocked(withUserContext);
+
+function tokenFor(clerkId: string) {
+  return `valid.${clerkId}`;
+}
 
 const alice = {
   id: 1,
@@ -62,7 +75,7 @@ const alice = {
 };
 
 const aliceHeaders = {
-  Authorization: `Bearer ${jwt.sign({sub: alice.clerkId}, "test-secret")}`,
+  Authorization: `Bearer ${tokenFor(alice.clerkId)}`,
 };
 
 const sampleTask = {
@@ -153,7 +166,7 @@ describe("task caching", () => {
   it("does not leak one user's cache to another user", async () => {
     const bob = {...alice, id: 2, clerkId: "clerk_bob"};
     const bobHeaders = {
-      Authorization: `Bearer ${jwt.sign({sub: bob.clerkId}, "test-secret")}`,
+      Authorization: `Bearer ${tokenFor(bob.clerkId)}`,
     };
 
     mockWithUserContext.mockResolvedValue([sampleTask]);

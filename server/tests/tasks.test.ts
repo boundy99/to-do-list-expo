@@ -1,6 +1,5 @@
 import {describe, it, expect, beforeEach, vi} from "vitest";
 import request from "supertest";
-import * as jwt from "jsonwebtoken";
 import app from "../index";
 import {withUserContext} from "../database/rls";
 
@@ -25,6 +24,17 @@ vi.mock("../database/rls", () => ({
   withUserContext: vi.fn(),
 }));
 
+vi.mock("@clerk/backend", () => ({
+  verifyToken: vi.fn(async (token: string) => {
+    if (!token.startsWith("valid.")) {
+      throw new Error("Token verification failed");
+    }
+    return {sub: token.slice("valid.".length)};
+  }),
+}));
+
+process.env.CLERK_SECRET_KEY = "test-secret-key";
+
 const mockWithUserContext = vi.mocked(withUserContext);
 
 const alice = {
@@ -36,8 +46,12 @@ const alice = {
   username: null,
 };
 
+function tokenFor(clerkId: string) {
+  return `valid.${clerkId}`;
+}
+
 const aliceHeaders = {
-  Authorization: `Bearer ${jwt.sign({sub: alice.clerkId}, "test-secret")}`,
+  Authorization: `Bearer ${tokenFor(alice.clerkId)}`,
 };
 
 const sampleTask = {
@@ -56,13 +70,12 @@ beforeEach(() => {
 });
 
 describe("users", () => {
-  it("rejects a valid JWT whose user does not exist", async () => {
+  it("rejects a valid token whose user does not exist", async () => {
     userLookup.rows = [];
-    const token = jwt.sign({sub: "clerk_ghost"}, "test-secret");
 
     const res = await request(app)
       .get("/api/tasks")
-      .set("Authorization", `Bearer ${token}`);
+      .set("Authorization", `Bearer ${tokenFor("clerk_ghost")}`);
 
     expect(res.status).toBe(401);
     expect(res.body).toEqual({error: "User not found"});
@@ -80,6 +93,30 @@ describe("users", () => {
       alice.id,
       expect.any(Function),
     );
+  });
+
+  it("rejects a token that fails verification", async () => {
+    const res = await request(app)
+      .get("/api/tasks")
+      .set("Authorization", "Bearer forged-or-expired-token");
+
+    expect(res.status).toBe(401);
+    expect(res.body).toEqual({error: "Invalid token"});
+    expect(mockWithUserContext).not.toHaveBeenCalled();
+  });
+
+  it("rejects requests when CLERK_SECRET_KEY is not configured", async () => {
+    const saved = process.env.CLERK_SECRET_KEY;
+    delete process.env.CLERK_SECRET_KEY;
+    try {
+      const res = await request(app).get("/api/tasks").set(aliceHeaders);
+
+      expect(res.status).toBe(500);
+      expect(res.body).toEqual({error: "Clerk secret key not configured"});
+      expect(mockWithUserContext).not.toHaveBeenCalled();
+    } finally {
+      process.env.CLERK_SECRET_KEY = saved;
+    }
   });
 });
 

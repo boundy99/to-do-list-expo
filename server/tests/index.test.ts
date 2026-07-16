@@ -1,8 +1,18 @@
 import "dotenv/config";
-import {describe, it, expect} from "vitest";
+import {describe, it, expect, vi} from "vitest";
 import request from "supertest";
-import * as jwt from "jsonwebtoken";
+import {verifyToken} from "@clerk/backend";
 import app from "../index";
+
+vi.mock("@clerk/backend", () => ({
+  verifyToken: vi.fn(async () => {
+    throw new Error("Token verification failed");
+  }),
+}));
+
+process.env.CLERK_SECRET_KEY = "test-secret-key";
+
+const mockVerifyToken = vi.mocked(verifyToken);
 
 describe("error responses", () => {
   it("returns JSON 404 for unknown routes", async () => {
@@ -29,7 +39,7 @@ describe("error responses", () => {
     expect(res.body).toEqual({error: "Token required"});
   });
 
-  it("returns 401 for a token that is not a JWT", async () => {
+  it("returns 401 for a token that fails signature verification", async () => {
     const res = await request(app)
       .get("/api/tasks")
       .set("Authorization", "Bearer not-a-jwt");
@@ -38,17 +48,17 @@ describe("error responses", () => {
     expect(res.body).toEqual({error: "Invalid token"});
   });
 
-  it("returns 401 for an expired token", async () => {
-    const expiredToken = jwt.sign({sub: "user_test"}, "test-secret", {
-      expiresIn: -60,
-    });
+  it("returns 401 for an expired token without leaking the reason", async () => {
+    mockVerifyToken.mockRejectedValueOnce(
+      Object.assign(new Error("JWT is expired."), {reason: "token-expired"}),
+    );
 
     const res = await request(app)
       .get("/api/tasks")
-      .set("Authorization", `Bearer ${expiredToken}`);
+      .set("Authorization", "Bearer expired-token");
 
     expect(res.status).toBe(401);
-    expect(res.body).toEqual({error: "Token expired"});
+    expect(res.body).toEqual({error: "Invalid token"});
   });
 });
 
